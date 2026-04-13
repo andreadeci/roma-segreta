@@ -57,14 +57,19 @@
       }
     };
 
-    // v5 prices (restored originals)
+    // Prezzi reali lavanderia (per pezzo singolo)
     const PRICES = {
-      lenzuola: 2.50,
-      federe: 1.00,
-      asciugamani: 3.00,  // set asciugamani
-      tappeti: 1.50,
-      copripiumini: 4.00
+      lenzuola: 1.30,       // 1 lenzuolo matrimoniale
+      lenzuolo_sing: 1.00,  // 1 lenzuolo singolo (non usato per ora)
+      federe: 0.70,         // 1 federa
+      asc_grande: 1.30,     // 1 asciugamano grande
+      asc_viso: 0.70,       // 1 asciugamano viso
+      asc_bidet: 0.60,      // 1 asciugamano bidet
+      tappeti: 0.94,        // 1 tappetino bagno
+      copripiumini: 4.00    // 1 copripiumino
     };
+    // Costo set asciugamani per ospite = grande + viso + bidet = €2,60
+    const ASC_SET_PRICE = PRICES.asc_grande + PRICES.asc_viso + PRICES.asc_bidet;
 
     // --- State ---
     let currentUser = null;
@@ -604,7 +609,7 @@
       let order = null;
       const { data: existingOrder } = await sb.from('laundry_orders').select('*').eq('week_start', monStr).maybeSingle();
 
-      const totalCostCalc = totAll.lenzuola * PRICES.lenzuola + totAll.federe * PRICES.federe + totAll.asciugamani * PRICES.asciugamani + totAll.tappeti * PRICES.tappeti + totAll.copripiumini * PRICES.copripiumini;
+      const totalCostCalc = totAll.lenzuola * PRICES.lenzuola + totAll.federe * PRICES.federe + totAll.asciugamani * ASC_SET_PRICE + totAll.tappeti * PRICES.tappeti + totAll.copripiumini * PRICES.copripiumini;
 
       if (existingOrder) {
         order = existingOrder;
@@ -641,8 +646,10 @@
         const lines = [];
         if (tot.lenzuola > 0) lines.push(`  ${tot.lenzuola} lenzuola matrimoniali`);
         if (tot.federe > 0) lines.push(`  ${tot.federe} federe`);
-        if (tot.asciugamani > 0) lines.push(`  ${tot.asciugamani} set asciugamani`);
-        if (tot.tappeti > 0) lines.push(`  ${tot.tappeti} tappeti doccia`);
+        if (tot.asciugamani > 0) lines.push(`  ${tot.asciugamani} asciugamani grandi`);
+        if (tot.asciugamani > 0) lines.push(`  ${tot.asciugamani} asciugamani viso`);
+        if (tot.asciugamani > 0) lines.push(`  ${tot.asciugamani} asciugamani bidet`);
+        if (tot.tappeti > 0) lines.push(`  ${tot.tappeti} tappetini bagno`);
         if (tot.copripiumini > 0) lines.push(`  ${tot.copripiumini} copripiumini`);
         if (lines.length > 0) {
           orderTextLines.push(`🏠 ${aptName.toUpperCase()}:`);
@@ -699,8 +706,10 @@
             <tbody>
               ${totAll.lenzuola > 0 ? `<tr><td>Lenzuola matrimoniali</td><td class="text-center">${totAll.lenzuola}</td><td class="text-right">${formatEuro(PRICES.lenzuola)}</td><td class="text-right">${formatEuro(totAll.lenzuola * PRICES.lenzuola)}</td></tr>` : ''}
               ${totAll.federe > 0 ? `<tr><td>Federe</td><td class="text-center">${totAll.federe}</td><td class="text-right">${formatEuro(PRICES.federe)}</td><td class="text-right">${formatEuro(totAll.federe * PRICES.federe)}</td></tr>` : ''}
-              ${totAll.asciugamani > 0 ? `<tr><td>Set asciugamani</td><td class="text-center">${totAll.asciugamani}</td><td class="text-right">${formatEuro(PRICES.asciugamani)}</td><td class="text-right">${formatEuro(totAll.asciugamani * PRICES.asciugamani)}</td></tr>` : ''}
-              ${totAll.tappeti > 0 ? `<tr><td>Tappeti doccia</td><td class="text-center">${totAll.tappeti}</td><td class="text-right">${formatEuro(PRICES.tappeti)}</td><td class="text-right">${formatEuro(totAll.tappeti * PRICES.tappeti)}</td></tr>` : ''}
+              ${totAll.asciugamani > 0 ? `<tr><td>Asciugamano grande</td><td class="text-center">${totAll.asciugamani}</td><td class="text-right">${formatEuro(PRICES.asc_grande)}</td><td class="text-right">${formatEuro(totAll.asciugamani * PRICES.asc_grande)}</td></tr>` : ''}
+              ${totAll.asciugamani > 0 ? `<tr><td>Asciugamano viso</td><td class="text-center">${totAll.asciugamani}</td><td class="text-right">${formatEuro(PRICES.asc_viso)}</td><td class="text-right">${formatEuro(totAll.asciugamani * PRICES.asc_viso)}</td></tr>` : ''}
+              ${totAll.asciugamani > 0 ? `<tr><td>Asciugamano bidet</td><td class="text-center">${totAll.asciugamani}</td><td class="text-right">${formatEuro(PRICES.asc_bidet)}</td><td class="text-right">${formatEuro(totAll.asciugamani * PRICES.asc_bidet)}</td></tr>` : ''}
+              ${totAll.tappeti > 0 ? `<tr><td>Tappetino bagno</td><td class="text-center">${totAll.tappeti}</td><td class="text-right">${formatEuro(PRICES.tappeti)}</td><td class="text-right">${formatEuro(totAll.tappeti * PRICES.tappeti)}</td></tr>` : ''}
               ${totAll.copripiumini > 0 ? `<tr><td>Copripiumini</td><td class="text-center">${totAll.copripiumini}</td><td class="text-right">${formatEuro(PRICES.copripiumini)}</td><td class="text-right">${formatEuro(totAll.copripiumini * PRICES.copripiumini)}</td></tr>` : ''}
             </tbody>
           </table>
